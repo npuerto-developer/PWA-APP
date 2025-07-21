@@ -41,10 +41,23 @@ export async function receiveAnswer(answerSDP) {
 }
 
 export function sendData(data) {
-  if (channel?.readyState === "open") {
+  if (!channel) {
+    console.warn("No hay canal aún");
+    return;
+  }
+
+  if (channel.readyState === "open") {
     console.log("Enviando datos por P2P", data);
     channel.send(JSON.stringify(data));
   } else {
-    console.warn("Canal no está abierto aún");
+    console.warn("Canal no está listo aún, se intentará más tarde");
+    // Reintentar en 1 segundo
+    setTimeout(() => sendData(data), 1000);
   }
 }
+
+setInterval(() => {
+  if (channel) {
+    console.log("Estado del canal:", channel.readyState);
+  }
+}, 1000);
